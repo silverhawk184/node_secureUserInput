@@ -95,7 +95,7 @@ export let baseRules = {
   raw: ruleRaw
 };
 
-export const parseInput = (
+export const secureUserInput = (
   data: any,
   dataRules: any,
   fn?: any,
