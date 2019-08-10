@@ -1,0 +1,24 @@
+{
+  "name": "node_secureuserinput",
+  "version": "0.0.1",
+  "description": "Validates and secures user submitted data",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "tbd"
+  },
+  "author": "Nick Schild",
+  "license": "ISC",
+  "dependencies": {
+    "@types/lodash": "^4.14.136",
+    "@types/mysql": "^2.15.6",
+    "@types/node": "^12.7.1",
+    "@types/sugar": "^2.0.2",
+    "lodash": "^4.17.15",
+    "mysql": "^2.17.1",
+    "sugar": "^2.0.6"
+  }
+}
