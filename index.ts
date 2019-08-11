@@ -1,8 +1,8 @@
-import fs from "fs";
-import path from "path";
+import * as fs from "fs";
+import * as path from "path";
 import { get, isArray } from "lodash";
-import mysql from "mysql";
-import sugar from "sugar";
+import * as mysql from "mysql";
+import * as sugar from "sugar";
 
 // cSpell:ignore PARSEINPUTRULE RULECONST
 
@@ -102,42 +102,6 @@ export const secureUserInput = (
   language: string = "en-us"
 ): any => {
   const lang = i18n.init(language);
-  /* 
-    This function cleans an object of user supplied data and validates it against a set of rules. The rules are an a structure of the expected input with the values set to one of the rule objects below.
-    By default, all values are safe from SQL and XSS injection.
-
-    FORMATTING RULES
-    TODO: file, blob, binary, etc
-
-    EXAMPLE:
-    data: {
-        credentials: {
-            username: 'johnDoe',
-            password: '1234abcd'
-        },
-        info: {
-            phone: '(123) 123-1234',
-            email: 'johnDoe@gmail.com',
-            birthday: '1/1/2019',
-            signature: '<p><blink> I am awesome!!</blink></p>'
-        },
-        wouldLikeEmailNotifications: true
-    }
-    dataRules: {
-        credentials: {
-            username: {type: 'string', required: true, minLength: 5, maxLength: 200},
-            password: {type: 'string', required: true, minLength: 8, maxLength: 200, mustIncludeSpecialChar?: true, mustIncludeNumber?: true, mustIncludeLowercaseLetter?: true, mustIncludeUppercaseLetter?: true},
-        },
-        info: {
-            phone: {type: 'phone'},
-            email: {type: 'email', required: true},
-            birthday: {type: 'date'},
-            signature: {type: 'string', htmlEscape: false}
-        },
-        wouldLikeEmailNotifications: {type: boolean}
-    }
-    */
-
   let errors: string[] = [];
 
   function iterationCopy(src: any, curPath: string[] = []) {
