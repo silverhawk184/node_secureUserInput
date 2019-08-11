@@ -9,7 +9,7 @@ Simple usage:
 ```
 import { baseRules, secureUserInput } from 'node_secure-user-input';
 
-//let's define some custom rules
+// let's define some custom rules
 export const RULE = {
     ...baseRules,
     positiveNumber: { ...baseRules.number, min: 0, defaultValue: 0 },
@@ -88,7 +88,7 @@ Built in validation for: strings,numbers, booleans, phone numbers, email address
 - **mustIncludeUppercaseLetter**?: boolean;
 - **removeNonvisibleChars**?: boolean; _defaults to true_
 - **htmlEscape**?: boolean; _defaults to true_
-- **sqlEscape**?: boolean;\* _defaults to true_
+- **sqlEscape**?: boolean; _defaults to true_
 - **enum**?: string[];
 
 ### baseRule.number
@@ -142,3 +142,5 @@ Built in validation for: strings,numbers, booleans, phone numbers, email address
 
 - **required**?: boolean;
 - **defaultValue**?: any;
+
+## Tests coming soon
