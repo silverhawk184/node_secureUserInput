@@ -311,7 +311,7 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 
 // generate dictionary
 // prettier-ignore
-let i18n = {init:(a:string)=>(b:string,c:string[]=[]):string=>{let d=get(i18n,`dictionaries.${a}.${b}`,get(i18n,`dictionaries.${a}.general error`,"Error"));return(c.forEach((a,b)=>{d=d.replace(`{${b}}`,a);}),d);},dictionaries:{}};
+let i18n: {init: (language: string) => (key:string, vars?: string[]) => string, dictionaries: {[index: string]: object}} = {init:(a:string)=>(b:string,c:string[]=[]):string=>{let d=get(i18n,`dictionaries.${a}.${b}`,get(i18n,`dictionaries.${a}.general error`,"Error"));return(c.forEach((a,b)=>{d=d.replace(`{${b}}`,a);}),d);},dictionaries:{}};
 // prettier-ignore
 function readJsonFilesFromDir(a:string,b:(filename:string,data:object)=>void){fs.readdir(a,(c,d)=>{c||d.forEach(c=>{const d=path.parse(c).name,e=path.parse(c).ext;if("json"!==e)return;const f=path.resolve(a,c);fs.stat(f,(a,c)=>{if(!a){const a=c.isFile();a&&fs.readFile(f,(a,c)=>{a||b(d,c);});}});});});}
 readJsonFilesFromDir('languages/', (fileName, data) => {
