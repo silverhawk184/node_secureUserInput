@@ -22,5 +22,4 @@ $RECYCLE.BIN/
 # Operating System Files
 # =========================
 node_modules
-*.js
-*/*.js
+/lib
