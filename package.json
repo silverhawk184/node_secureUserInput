@@ -2,14 +2,19 @@
   "name": "node_secure-user-input",
   "version": "0.0.5",
   "description": "Validates and secures user submitted data",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
-    "test": "ts-node ./tests/index.ts",
+    "build": "tsc",
     "check-types": "tsc",
-    "build": "tsc -p tsconfig.json",
-    "prepare": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
-    "lint": "tslint -p tsconfig.json"
+    "lint": "tslint -p tsconfig.json",
+    "postversion" : "git push && git push --tags",
+    "prepare": "npm run build",
+    "prepublishOnly" : "npm test && npm run lint",
+    "preversion" : "npm run lint",
+    "test": "ts-node ./tests/index.ts",
+    "version" : "npm run format && git add -A src"
   },
   "repository": {
     "type": "git",
@@ -40,6 +45,7 @@
     "typescript": "^3.5.3"
   },
   "files": [
-    "lib/**/*"
+    "lib/**/*",
+    "src/**/*"
   ]
 }
