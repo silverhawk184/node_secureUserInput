@@ -197,12 +197,12 @@ const emailExpected = {
 const dateTests = {
 	date: '7/4/2019',
 	date1: 'July 4th 2019',
-	//date2: '4th of july 2019',
+	//date2: '4th of july 2019', - invalid format TODO
 	date3: '7/4',
-	//date4: 'Tuesday',
-	date5: 1,
-	//date6: 'noon',
-	//date7: 1562212800,
+	//date4: 'Tuesday', - time is variable
+	//date5: 1, - test depends on timezone
+	//date6: 'noon', - time is variable
+	//date7: 1562212800, - invalid format TODO
 	date8: 1562212800000,
 	dateError: 'asdf',
 	dateError2: '12/32/2019',
@@ -210,7 +210,7 @@ const dateTests = {
 	dateError4: '12/-1/2019',
 	dateRequired: '7/4/2019',
 	dateRequiredError: undefined,
-	//dateIncludeTime: 'now',
+	//dateIncludeTime: 'now', - time is variable
 	dateFormat: '2019-07-04',
 	dateDefaultValue: undefined,
 };
@@ -220,7 +220,7 @@ const dateRules = {
 	//date2: baseRules.date,
 	date3: baseRules.date,
 	//date4: baseRules.date,
-	date5: baseRules.date,
+	//date5: baseRules.date,
 	//date6: baseRules.date,
 	//date7: baseRules.date,
 	date8: baseRules.date,
@@ -240,7 +240,7 @@ const dateExpected = {
 	//date2: '2019-07-04',
 	date3: '2019-07-04',
 	//date4: 'Tuesday',
-	date5: '1969-12-31',
+	//date5: '1969-12-31',
 	//date6: 'noon',
 	//date7: '1970-01-18',
 	date8: '2019-07-04',
