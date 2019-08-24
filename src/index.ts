@@ -1,13 +1,13 @@
 import fs from 'fs';
-import path from 'path';
 import { get, isArray } from 'lodash';
 import mysql from 'mysql';
-const sugar = require('sugar-date');
+import path from 'path';
 
+const sugar = require('sugar-date');
 
 // cSpell:ignore PARSEINPUTRULE RULECONST
 
-let RULECONST = 'PARSEINPUTRULE';
+const RULECONST = 'PARSEINPUTRULE';
 const ruleString: {
 	RULECONST: string;
 	type: 'string';
@@ -56,29 +56,29 @@ const ruleUrl: { RULECONST: string; type: 'url'; required?: boolean; defaultValu
 const ruleRaw: { RULECONST: string; type: 'raw'; required?: boolean; defaultValue?: any } = { RULECONST, type: 'raw' };
 
 export let baseRules = {
-	string: ruleString,
-	number: ruleNumber,
 	boolean: ruleBoolean,
-	phone: rulePhone,
-	email: ruleEmail,
 	date: ruleDate,
-	url: ruleUrl,
+	email: ruleEmail,
+	number: ruleNumber,
+	phone: rulePhone,
 	raw: ruleRaw,
+	string: ruleString,
+	url: ruleUrl,
 };
 
 export const secureUserInput = (data: any, dataRules: any, fn?: any, language: string = 'en-us'): {out: any, errors: string[]} => {
 	const lang = i18n.init(language);
-	let errors: string[] = [];
+	const errors: string[] = [];
 
 	function iterationCopy(src: any, curPath: string[] = []) {
-		let target: any = {};
-		for (let prop in src) {
-			let tempPath = [...curPath];
+		const target: any = {};
+		for (const prop of Object.keys(src)) {
+			const tempPath = [...curPath];
 			tempPath.push(prop);
-			let cleanProp = prop.replace('[]','');
+			const cleanProp = prop.replace('[]', '');
 
 			if (src.hasOwnProperty(prop) && typeof src[prop] === 'object') {
-				if (typeof src[prop].RULECONST === 'string' && src[prop].RULECONST === RULECONST) 
+				if (typeof src[prop].RULECONST === 'string' && src[prop].RULECONST === RULECONST)
 					target[cleanProp] = testAndBuild(src[prop], tempPath.join('.'));
 				else if (prop.substr(-2) === '[]')
 					target[cleanProp] = get(data, tempPath.join('.'), []).map((item: any, index: number) => testAndBuild(src[prop], tempPath.join('.') + '[' + index + ']'));
@@ -106,16 +106,14 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 		const { to01, asString01 } = curRules;
 		const { includeTime, format } = curRules;
 		let safeTemp: string[];
-		let temp = get(data, curPath, get(data, curPath.substr(0,curPath.length-2)));
+		let temp = get(data, curPath, get(data, curPath.substr(0, curPath.length - 2)));
 
 		if ((typeof multiple !== 'undefined' && multiple) || curPath.substr(-2) === '[]') {
 			if (!isArray(temp)) {
-				console.log(1, typeof temp, temp)
 				errors.push(lang('invalid data', [curPath]));
 				return undefined;
 			}
 			else if (required && temp.length === 0) {
-				console.log(2)
 				errors.push(lang('invalid data', [curPath]));
 				return undefined;
 			}
@@ -141,7 +139,7 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 				//default on
 				temp = safeTemp.join('');
 			}
-			if (safeTemp.length == 0) {
+			if (safeTemp.length === 0) {
 				if (typeof defaultValue !== 'undefined')
 					return defaultValue;
 				if (required) {
@@ -190,7 +188,7 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 			if (typeof temp === 'string') {
 				temp = parseFloat(temp.trim());
 				if (isNaN(temp)) {
-					if (typeof defaultValue != 'undefined')
+					if (typeof defaultValue !== 'undefined')
 						return curRules.default;
 					else {
 						errors.push(lang('not a number', [curPath]));
@@ -234,11 +232,11 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 			temp = String(temp)
 				.trim()
 				.replace(/\+|\(|\)|\-|\s|\./g, '');
-			if (!isNaN(parseInt(temp)) || !(temp.length == 10 || temp.length == 11)) {
+			if (!isNaN(Number(temp)) || !(temp.length === 10 || temp.length === 11)) {
 				errors.push(lang('not a phone number', [curPath]));
 				return undefined;
 			}
-			if (temp.length == 10)
+			if (temp.length === 10)
 				temp = '1' + temp;
 			return temp;
 		}
@@ -263,7 +261,7 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 			if (typeof includeTime !== 'undefined' && includeTime)
 				temp = temp.format('%F %T').raw;
 			else if (typeof format === 'string')
-				temp = temp.format(format).raw
+				temp = temp.format(format).raw;
 			else
 				temp = temp.format('%F').raw;
 			if (typeof sqlEscape !== 'undefined' && sqlEscape) temp = mysql.escape(temp);
@@ -277,7 +275,7 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 				temp = safeTemp.join('');
 			}
 
-			if (safeTemp.length == 0) {
+			if (safeTemp.length === 0) {
 				if (typeof defaultValue !== 'undefined') {
 					return defaultValue;
 				}
@@ -313,6 +311,7 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 };
 
 // generate dictionary
+// tslint:disable
 // prettier-ignore
 let i18n: {init: (language: string) => (key:string, vars?: string[]) => string, dictionaries: {[index: string]: object}} = {init:(a:string)=>(b:string,c:string[]=[]):string=>{let d=get(i18n,`dictionaries.${a}.${b}`,get(i18n,`dictionaries.${a}.general error`,"Error"));return(c.forEach((a,b)=>{d=d.replace(`{${b}}`,a);}),d);},dictionaries:{}};
 // prettier-ignore
