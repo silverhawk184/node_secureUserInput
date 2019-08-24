@@ -1,6 +1,6 @@
 {
   "name": "node_secure-user-input",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Validates and secures user submitted data",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
