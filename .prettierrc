@@ -1,10 +1,10 @@
 {
-	"prettier.arrowParens": "always",
-	"prettier.endOfLine": "lf",
-	"prettier.printWidth": 180,
-	"prettier.singleQuote": true,
-	"prettier.tabWidth": 4,
-	"prettier.trailingComma": "es5",
-	"prettier.tslintIntegration": true,
-	"prettier.useTabs": true
+  "prettier.arrowParens": "always",
+  "prettier.endOfLine": "lf",
+  "prettier.printWidth": 200,
+  "prettier.proseWrap": "never",
+  "prettier.singleQuote": true,
+  "prettier.tabWidth": 4,
+  "prettier.trailingComma": "es5",
+  "prettier.useTabs": true
 }

@@ -1,8 +1,9 @@
-import * as fs from 'fs';
-import * as path from 'path';
+import fs from 'fs';
+import path from 'path';
 import { get, isArray } from 'lodash';
-import * as mysql from 'mysql';
-import * as sugar from 'sugar';
+import mysql from 'mysql';
+const sugar = require('sugar-date');
+
 
 // cSpell:ignore PARSEINPUTRULE RULECONST
 
@@ -65,7 +66,7 @@ export let baseRules = {
 	raw: ruleRaw,
 };
 
-export const secureUserInput = (data: any, dataRules: any, fn?: any, language: string = 'en-us'): any => {
+export const secureUserInput = (data: any, dataRules: any, fn?: any, language: string = 'en-us'): {out: any, errors: string[]} => {
 	const lang = i18n.init(language);
 	let errors: string[] = [];
 
@@ -74,12 +75,15 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 		for (let prop in src) {
 			let tempPath = [...curPath];
 			tempPath.push(prop);
+			let cleanProp = prop.replace('[]','');
 
 			if (src.hasOwnProperty(prop) && typeof src[prop] === 'object') {
-				if (typeof src[prop].RULECONST === 'string' && src[prop].RULECONST === RULECONST) target[prop] = testAndBuild(src[prop], tempPath.join('.'));
+				if (typeof src[prop].RULECONST === 'string' && src[prop].RULECONST === RULECONST) 
+					target[cleanProp] = testAndBuild(src[prop], tempPath.join('.'));
 				else if (prop.substr(-2) === '[]')
-					target[prop] = get(data, tempPath.join('.'), []).map((item: any, index: number) => testAndBuild(src[prop], tempPath.join('.') + '[' + index + ']'));
-				else target[prop] = iterationCopy(src[prop], tempPath);
+					target[cleanProp] = get(data, tempPath.join('.'), []).map((item: any, index: number) => testAndBuild(src[prop], tempPath.join('.') + '[' + index + ']'));
+				else
+					target[cleanProp] = iterationCopy(src[prop], tempPath);
 			}
 		}
 		return target;
@@ -101,73 +105,73 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 		const { min, max, decimalPlaces, asString } = curRules;
 		const { to01, asString01 } = curRules;
 		const { includeTime, format } = curRules;
-
-		let temp = get(data, curPath);
+		let safeTemp: string[];
+		let temp = get(data, curPath, get(data, curPath.substr(0,curPath.length-2)));
 
 		if ((typeof multiple !== 'undefined' && multiple) || curPath.substr(-2) === '[]') {
 			if (!isArray(temp)) {
+				console.log(1, typeof temp, temp)
 				errors.push(lang('invalid data', [curPath]));
-				return false;
-			} else if (required && temp.length === 0) {
+				return undefined;
+			}
+			else if (required && temp.length === 0) {
+				console.log(2)
 				errors.push(lang('invalid data', [curPath]));
-				return false;
-			} else {
+				return undefined;
+			}
+			else {
 				curRules.multiple = false;
 				return temp.map((item, index) => testAndBuild(curRules, `${curPath}[${index}]`));
 			}
 		}
-
 		if (typeof temp === 'undefined') {
 			if (required) {
 				errors.push(lang('missing data', [curPath]));
-				return false;
-			} else if (typeof defaultValue != 'undefined') {
-				return curRules.default;
-			} else {
 				return undefined;
 			}
+			else if (typeof defaultValue !== 'undefined')
+				return curRules.defaultValue;
+			else
+				return undefined;
 		}
 		if (type === 'string') {
 			temp = String(temp).trim();
-			const safeTemp = [...temp];
+			safeTemp = [...temp];
 			if (typeof removeNonvisibleChars === 'undefined' || !removeNonvisibleChars) {
 				//default on
 				temp = safeTemp.join('');
 			}
-
 			if (safeTemp.length == 0) {
-				if (typeof defaultValue !== 'undefined') {
+				if (typeof defaultValue !== 'undefined')
 					return defaultValue;
-				}
 				if (required) {
 					errors.push(lang('missing data', [curPath]));
-					return false;
+					return undefined;
 				}
 			}
-
 			if (typeof minLength === 'number' && safeTemp.length < minLength) {
 				errors.push(lang('too short', [curPath]));
-				return false;
+				return undefined;
 			}
 			if (typeof maxLength === 'number' && safeTemp.length > maxLength) {
 				errors.push(lang('too long', [curPath]));
-				return false;
+				return undefined;
 			}
 			if (typeof mustIncludeSpecialChar !== 'undefined' && mustIncludeSpecialChar && temp.match(/[!@#$%^&*(),.?":{}|<>]/) === null) {
 				errors.push(lang('no special char', [curPath]));
-				return false;
+				return undefined;
 			}
 			if (typeof mustIncludeNumber !== 'undefined' && mustIncludeNumber && temp.match(/[0-9]/) === null) {
 				errors.push(lang('no number', [curPath]));
-				return false;
+				return undefined;
 			}
 			if (typeof mustIncludeLowercaseLetter !== 'undefined' && mustIncludeLowercaseLetter && temp.match(/[a-z]/) === null) {
 				errors.push(lang('no lowercase char', [curPath]) + curPath);
-				return false;
+				return undefined;
 			}
 			if (typeof mustIncludeUppercaseLetter !== 'undefined' && mustIncludeUppercaseLetter && temp.match(/[A-Z]/) === null) {
 				errors.push(lang('no uppercase char', [curPath]));
-				return false;
+				return undefined;
 			}
 			if (typeof htmlEscape === 'undefined' || !htmlEscape) {
 				//default on
@@ -178,70 +182,67 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 					.replace(/"/g, '&quot;')
 					.replace(/'/g, '&#039;');
 			}
-			if (typeof sqlEscape !== 'undefined' || sqlEscape) {
+			if (typeof sqlEscape !== 'undefined' || sqlEscape)
 				temp = mysql.escape(temp);
-			}
 			return temp;
-		} else if (type === 'number') {
+		}
+		else if (type === 'number') {
 			if (typeof temp === 'string') {
 				temp = parseFloat(temp.trim());
 				if (isNaN(temp)) {
-					if (typeof defaultValue != 'undefined') {
+					if (typeof defaultValue != 'undefined')
 						return curRules.default;
-					} else {
+					else {
 						errors.push(lang('not a number', [curPath]));
-						return false;
+						return undefined;
 					}
 				}
 			}
 			if (typeof temp === 'number') {
 				if (typeof min === 'number' && temp < min) {
 					errors.push(lang('too small', [curPath]));
-					return false;
+					return undefined;
 				}
 				if (typeof max === 'number' && temp > max) {
 					errors.push(lang('too large', [curPath]));
-					return false;
+					return undefined;
 				}
-				if (typeof decimalPlaces === 'number') {
+				if (typeof decimalPlaces === 'number')
 					temp = temp.toFixed(decimalPlaces);
-				}
-				if (typeof asString !== 'undefined' && asString) {
+				if (typeof asString !== 'undefined' && asString)
 					temp = String(temp);
-				}
 				return temp;
 			}
 			errors.push(lang('not a number', [curPath]));
 			return false;
-		} else if (type === 'boolean') {
-			if (temp.inArray([0, '0', false, 'false', 'FALSE', 'f', 'F'])) {
+		}
+		else if (type === 'boolean') {
+			if ([0, '0', false, 'false', 'FALSE', 'f', 'F', null, ''].indexOf(temp) >= 0)
 				temp = false;
-			} else if (temp.inArray([1, '1', true, 'true', 'TRUE', 't', 'T'])) {
+			else if ([1, '1', true, 'true', 'TRUE', 't', 'T'].indexOf(temp) >= 0)
 				temp = true;
-			}
-			if (to01) {
+			else return undefined;
+			if (to01)
 				return temp ? 1 : 0;
-			}
-			if (asString01) {
+			if (asString01)
 				return temp ? '1' : '0';
-			}
-			if (asString) {
+			if (asString)
 				return temp ? 'true' : 'false';
-			}
 			return temp;
-		} else if (type === 'phone') {
+		}
+		else if (type === 'phone') {
 			temp = String(temp)
 				.trim()
 				.replace(/\+|\(|\)|\-|\s|\./g, '');
 			if (!isNaN(parseInt(temp)) || !(temp.length == 10 || temp.length == 11)) {
 				errors.push(lang('not a phone number', [curPath]));
-				return false;
+				return undefined;
 			}
-			if (temp.length == 10) {
+			if (temp.length == 10)
 				temp = '1' + temp;
-			}
 			return temp;
-		} else if (type === 'email') {
+		}
+		else if (type === 'email') {
 			temp = String(temp)
 				.trim()
 				.toLowerCase();
@@ -249,26 +250,28 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 			const test = re.test(temp);
 			if (!test) {
 				errors.push(lang('not an email address', [curPath]));
-				return false;
+				return undefined;
 			}
 			return temp;
-		} else if (type === 'date') {
-			temp = sugar.Date.create(temp);
-			if (!temp) {
+		}
+		else if (type === 'date') {
+			temp = new sugar.Date(temp);
+			if (!temp || (temp.raw && isNaN(temp.raw))) {
 				errors.push(lang('not a date', [curPath]));
-				return false;
+				return undefined;
 			}
-			if (typeof includeTime !== 'undefined' && includeTime) {
-				temp = temp.format('%F %T');
-			} else if (typeof format === 'string') {
-				temp = temp.format(format);
-			} else temp = temp.format('%F');
+			if (typeof includeTime !== 'undefined' && includeTime)
+				temp = temp.format('%F %T').raw;
+			else if (typeof format === 'string')
+				temp = temp.format(format).raw
+			else
+				temp = temp.format('%F').raw;
 			if (typeof sqlEscape !== 'undefined' && sqlEscape) temp = mysql.escape(temp);
 			return temp;
 		}
 		if (type === 'url') {
 			temp = String(temp).trim();
-			const safeTemp = [...temp];
+			safeTemp = [...temp];
 			if (typeof removeNonvisibleChars === 'undefined' || !removeNonvisibleChars) {
 				//default on
 				temp = safeTemp.join('');
@@ -280,7 +283,7 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 				}
 				if (required) {
 					errors.push(lang('missing data', [curPath]));
-					return false;
+					return undefined;
 				}
 			}
 			if (
@@ -288,24 +291,24 @@ export const secureUserInput = (data: any, dataRules: any, fn?: any, language: s
 				!/^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/.test(temp)
 			) {
 				errors.push(lang('not a url', [curPath]));
-				return false;
+				return undefined;
 			}
 			if (typeof sqlEscape !== 'undefined' && sqlEscape) {
 				temp = mysql.escape(temp);
 			}
 			return temp;
-		} else if (type === 'raw') {
+		}
+		else if (type === 'raw')
 			return temp;
-		} else {
+		else {
 			errors.push(lang('invalid data', [curPath]));
-			return false;
+			return undefined;
 		}
 	}
 
 	const out = iterationCopy(dataRules);
-	if (errors.length > 0) {
+	if (errors.length > 0)
 		errors.unshift(lang('header'));
-	}
 	return { out, errors };
 };
 

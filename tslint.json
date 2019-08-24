@@ -1,3 +1,26 @@
 {
-	"extends": ["tslint:recommended", "tslint-config-prettier"]
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended"],
+  "linterOptions": {
+    "exclude": ["src/_sample-data/*.ts"]
+  },
+  "jsRules": {},
+  "rules": {
+    "object-literal-key-quotes": false,
+    "object-literal-sort-keys": true,
+    "max-line-length": [true, 200],
+    "interface-name": [true, "never-prefix"],
+    "quotemark": [true, "single"],
+    "no-unsafe-any": false,
+    "no-empty-interface": false,
+    "member-access": false,
+    "one-line": false,
+    "ordered-imports": false,
+    "curly": false,
+    "arrow-parens": true,
+    "no-empty": false,
+    "one-variable-per-declaration": false,
+    "comment-format": false
+  },
+  "rulesDirectory": []
 }

@@ -4,7 +4,8 @@
   "description": "Validates and secures user submitted data",
   "main": "index.js",
   "scripts": {
-    "test": "test",
+    "test": "ts-node ./tests/index.ts",
+    "check-types": "tsc",
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
@@ -19,9 +20,16 @@
   "dependencies": {
     "lodash": "^4.17.15",
     "mysql": "^2.17.1",
-    "sugar": "^2.0.6"
+    "sugar-date": "^2.0.6"
   },
   "devDependencies": {
+    "@babel/core": "^7.5.5",
+    "@babel/helper-module-imports": "^7.0.0",
+    "@babel/node": "^7.5.5",
+    "@babel/plugin-proposal-class-properties": "^7.5.5",
+    "@babel/plugin-proposal-object-rest-spread": "^7.5.5",
+    "@babel/preset-env": "^7.5.5",
+    "@babel/preset-typescript": "^7.3.3",
     "@types/lodash": "^4.14.136",
     "@types/mysql": "^2.15.6",
     "@types/node": "^12.7.1",

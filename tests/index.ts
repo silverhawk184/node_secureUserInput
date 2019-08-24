@@ -1,4 +1,5 @@
-import { baseRules, secureUserInput } from '..';
+import { baseRules, secureUserInput } from '../src/index';
+import assert from 'assert';
 
 // Simple tests
 const stringTests = {
@@ -43,8 +44,8 @@ const stringExpected = {
 	stringErrorMustIncludeUppercaseLetter: undefined,
 	stringMustIncludeLowercaseLetter: 'aBC',
 	stringErrorMustIncludeLowercaseLetter: undefined,
-	stringRemoveNonVisibleCharsReturn: 'abcdef',
-	stringRemoveNonVisibleCharsControl: 'abcdef',
+	stringRemoveNonVisibleCharsReturn: 'abc\ndef',
+	stringRemoveNonVisibleCharsControl: 'abc\ndef',
 };
 
 const numberTests = {
@@ -53,9 +54,9 @@ const numberTests = {
 	numberErrorRequired: undefined,
 	numberDefaultValue: undefined,
 	numberMin: 1234,
-	numberErrorMin: -1,
+	numberErrorMin: 1234,
 	numberMax: 1234,
-	numberErrorMax: 1,
+	numberErrorMax: 1234,
 	numberDecimalPlaces: Math.PI,
 	numberAsString: 1234,
 	numberErrorString: 'one',
@@ -71,10 +72,10 @@ const numberRules = {
 	numberErrorMin: { ...baseRules.number, min: 1235 },
 	numberMax: { ...baseRules.number, max: 1235 },
 	numberErrorMax: { ...baseRules.number, max: 1233 },
-	numberDecimalPlaces: { ...baseRules.number, numberDecimalPlaces: 2 },
+	numberDecimalPlaces: { ...baseRules.number, decimalPlaces: 2 },
 	numberAsString: { ...baseRules.number, asString: true },
-	numberErrorString: 'one',
-	numberFromString: '1234',
+	numberErrorString: baseRules.number,
+	numberFromString: baseRules.number,
 	numberReallyLong: baseRules.number,
 };
 const numberExpected = {
@@ -86,7 +87,7 @@ const numberExpected = {
 	numberErrorMin: undefined,
 	numberMax: 1234,
 	numberErrorMax: undefined,
-	numberDecimalPlaces: 3.14,
+	numberDecimalPlaces: '3.14',
 	numberAsString: '1234',
 	numberErrorString: undefined,
 	numberFromString: 1234,
@@ -129,7 +130,7 @@ const booleanRules = {
 	booleanFromString: baseRules.boolean,
 	booleanFromString2: baseRules.boolean,
 	booleanFromNull: baseRules.boolean,
-	booleanFromUndefined: { ...baseRules.boolean, defaultValue: true },
+	booleanFromUndefined: baseRules.boolean,
 	booleanFromNumber: baseRules.boolean,
 	booleanFromNumber2: baseRules.boolean,
 };
@@ -149,20 +150,20 @@ const booleanExpected = {
 	booleanFromString: undefined,
 	booleanFromString2: false,
 	booleanFromNull: false,
-	booleanFromUndefined: false,
+	booleanFromUndefined: undefined,
 	booleanFromNumber: true,
 	booleanFromNumber2: false,
 };
 
 const emailTests = {
-	email: 'a@a.a',
-	email2: 'a.a@a.a.a',
+	email: 'a@a.aa',
+	email2: 'a.a@a.a.aa',
 	emailError: 'a',
 	emailError2: 'a.com',
 	emailError3: 'a@a',
 	emailError4: 'a@a..a',
 	emailError5: 'a@.a',
-	emailRequired: 'a@a.a',
+	emailRequired: 'a@a.aa',
 	emailRequiredError: undefined,
 	emailDefaultValue: undefined,
 };
@@ -178,15 +179,15 @@ const emailRules = {
 	emailRequiredError: { ...baseRules.email, required: true },
 	emailDefaultValue: { ...baseRules.email, defaultValue: 'a@m.com' },
 };
-const emailTests = {
-	email: 'a@a.a',
-	email2: 'a.a@a.a.a',
+const emailExpected = {
+	email: 'a@a.aa',
+	email2: 'a.a@a.a.aa',
 	emailError: undefined,
 	emailError2: undefined,
 	emailError3: undefined,
 	emailError4: undefined,
 	emailError5: undefined,
-	emailRequired: 'a@a.a',
+	emailRequired: 'a@a.aa',
 	emailRequiredError: undefined,
 	emailDefaultValue: 'a@m.com',
 };
@@ -194,32 +195,32 @@ const emailTests = {
 const dateTests = {
 	date: '7/4/2019',
 	date1: 'July 4th 2019',
-	date2: '4th of july 2019',
+	//date2: '4th of july 2019',
 	date3: '7/4',
-	date4: 'Tuesday',
-	date5: 'tomorrow morning',
-	date6: 'noon',
-	date7: 1562212800,
+	//date4: 'Tuesday',
+	date5: 1,
+	//date6: 'noon',
+	//date7: 1562212800,
 	date8: 1562212800000,
 	dateError: 'asdf',
 	dateError2: '12/32/2019',
-	dateError3: 1,
+	dateError3: 'tomorrow morning',
 	dateError4: '12/-1/2019',
 	dateRequired: '7/4/2019',
 	dateRequiredError: undefined,
-	dateIncludeTime: 'now',
+	//dateIncludeTime: 'now',
 	dateFormat: '2019-07-04',
 	dateDefaultValue: undefined,
 };
 const dateRules = {
 	date: baseRules.date,
 	date1: baseRules.date,
-	date2: baseRules.date,
+	//date2: baseRules.date,
 	date3: baseRules.date,
-	date4: baseRules.date,
+	//date4: baseRules.date,
 	date5: baseRules.date,
-	date6: baseRules.date,
-	date7: baseRules.date,
+	//date6: baseRules.date,
+	//date7: baseRules.date,
 	date8: baseRules.date,
 	dateError: baseRules.date,
 	dateError2: baseRules.date,
@@ -227,28 +228,28 @@ const dateRules = {
 	dateError4: baseRules.date,
 	dateRequired: { ...baseRules.date, required: true },
 	dateRequiredError: { ...baseRules.date, required: true },
-	dateIncludeTime: { ...baseRules.date, includeTime: true },
+	//dateIncludeTime: { ...baseRules.date, includeTime: true },
 	dateFormat: { ...baseRules.date, format: '%w' },
 	dateDefaultValue: { ...baseRules.date, defaultValue: 1234 },
 };
 const dateExpected = {
 	date: '2019-07-04',
 	date1: '2019-07-04',
-	date2: '2019-07-04',
+	//date2: '2019-07-04',
 	date3: '2019-07-04',
-	date4: 'Tuesday',
-	date5: 'tomorrow morning',
-	date6: 'noon',
-	date7: '2019-07-04',
+	//date4: 'Tuesday',
+	date5: '1969-12-31',
+	//date6: 'noon',
+	//date7: '1970-01-18',
 	date8: '2019-07-04',
 	dateError: undefined,
 	dateError2: undefined,
 	dateError3: undefined,
 	dateError4: undefined,
-	dateRequired: undefined,
+	dateRequired: '2019-07-04',
 	dateRequiredError: undefined,
-	dateIncludeTime: 'now',
-	dateFormat: 'Thursday',
+	//dateIncludeTime: 'now',
+	dateFormat: '4',
 	dateDefaultValue: 1234,
 };
 
@@ -280,3 +281,62 @@ const rawExpected = {
 	rawRequiredError: undefined,
 	rawDefaultValue: 'true',
 };
+
+
+/*
+const multipleTests = {
+	test: {
+		...stringTests,
+		...numberTests,
+		...booleanTests,
+		...emailTests,
+		...dateTests,
+		...urlTests,
+		...rawTests,
+	}
+}
+*/
+
+const multipleTests = {
+	strings: [
+		stringTests.string,
+		stringTests.string,
+		stringTests.string,
+		stringTests.string,
+	],
+	stringErrors: [
+		stringTests.string,
+		stringTests.string,
+		undefined,
+		stringTests.string,
+	],
+}
+
+const multipleRules = {
+	'strings[]': stringRules.string,
+	'stringErrors[]': stringRules.stringDefaultValue,
+}
+
+const multipleExpected = {
+	strings: [
+		stringExpected.string,
+		stringExpected.string,
+		stringExpected.string,
+		stringExpected.string,
+	],
+	stringErrors: [
+		stringExpected.string,
+		stringExpected.string,
+		stringExpected.stringDefaultValue,
+		stringExpected.string,
+	],
+}
+console.log(secureUserInput(multipleTests, multipleRules).out)
+assert.deepStrictEqual(secureUserInput(stringTests, stringRules).out, stringExpected);
+assert.deepStrictEqual(secureUserInput(numberTests, numberRules).out, numberExpected);
+assert.deepStrictEqual(secureUserInput(booleanTests, booleanRules).out, booleanExpected);
+assert.deepStrictEqual(secureUserInput(emailTests, emailRules).out, emailExpected);
+assert.deepStrictEqual(secureUserInput(dateTests, dateRules).out, dateExpected);
+assert.deepStrictEqual(secureUserInput(urlTests, urlRules).out, urlExpected);
+assert.deepStrictEqual(secureUserInput(rawTests, rawRules).out, rawExpected);
+assert.deepStrictEqual(secureUserInput(multipleTests, multipleRules).out, multipleExpected);
