@@ -284,21 +284,34 @@ const rawExpected = {
 	rawDefaultValue: 'true',
 };
 
-/*
 const multipleTests = {
-	test: {
-		...stringTests,
-		...numberTests,
-		...booleanTests,
-		...emailTests,
-		...dateTests,
-		...urlTests,
-		...rawTests,
-	}
-}
-*/
+	strings: [
+		'asdf',
+		'fdsa',
+	],
+	stringsError: [
+		undefined,
+		'fdsa',
+	],
+	stringsDefault: [
+		undefined,
+		'fdsa',
+	]
+};
 
-const multipleTests = {
+const multipleRules = {
+	strings: {...baseRules.string, multiple: true},
+	stringsError: {...baseRules.string, multiple: true, required: true},
+	stringsDefault: {...baseRules.string, multiple: true, defaultValue: 'aaaa'},
+};
+
+const multipleExpected = {
+	strings: ['asdf', 'fdsa'],
+	stringsError: [undefined, 'fdsa'],
+	stringsDefault: ['aaaa', 'fdsa'],
+};
+
+const arrayTests = {
 	strings: [
 		stringTests.string,
 		stringTests.string,
@@ -313,12 +326,12 @@ const multipleTests = {
 	],
 };
 
-const multipleRules = {
+const arrayRules = {
 	'strings[]': stringRules.string,
 	'stringErrors[]': stringRules.stringDefaultValue,
 };
 
-const multipleExpected = {
+const arrayExpected = {
 	strings: [
 		stringExpected.string,
 		stringExpected.string,
@@ -340,5 +353,5 @@ assert.deepStrictEqual(secureUserInput(emailTests, emailRules).out, emailExpecte
 assert.deepStrictEqual(secureUserInput(dateTests, dateRules).out, dateExpected);
 assert.deepStrictEqual(secureUserInput(urlTests, urlRules).out, urlExpected);
 assert.deepStrictEqual(secureUserInput(rawTests, rawRules).out, rawExpected);
-//console.log(secureUserInput(multipleTests, multipleRules).out)
-//assert.deepStrictEqual(secureUserInput(multipleTests, multipleRules).out, multipleExpected); TODO
+assert.deepStrictEqual(secureUserInput(multipleTests, multipleRules).out, multipleExpected);
+assert.deepStrictEqual(secureUserInput(arrayTests, arrayRules).out, arrayExpected);

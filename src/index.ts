@@ -149,16 +149,16 @@ export const secureUserInput = (
 		const { to01, asString01 } = curRules;
 		const { includeTime, format } = curRules;
 		let safeTemp: string[];
-		let temp = get(
-			data,
-			curPath,
-			get(data, curPath.substr(0, curPath.length - 2))
-		);
-
+		let temp = get(data, curPath);
 		if (
 			(typeof multiple !== 'undefined' && multiple) ||
 			curPath.substr(-2) === '[]'
 		) {
+			temp = get(
+				data,
+				curPath,
+				get(data, curPath.substr(0, curPath.length - 2))
+			);
 			if (!isArray(temp)) {
 				errors.push(lang('invalid data', [curPath]));
 				return undefined;
