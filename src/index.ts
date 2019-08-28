@@ -370,8 +370,11 @@ export const secureUserInput = (
 
 // generate dictionary
 // tslint:disable
-let i18n: {init: (language: string) => (key:string, vars?: string[]) => string, dictionaries: {[index: string]: object}} = {init:(a:string)=>(b:string,c:string[]=[]):string=>{let d=get(i18n,`dictionaries.${a}.${b}`,get(i18n,`dictionaries.${a}.general error`,'Error'));return(c.forEach((a,b)=>{d=d.replace(`{${b}}`,a);}),d);},dictionaries:{}};
-function readJsonFilesFromDir(a:string,b:(filename:string,data:object)=>void){fs.readdir(a,(c,d)=>{c||d.forEach(c=>{const d=path.parse(c).name,e=path.parse(c).ext;if('json'!==e)return;const f=path.resolve(a,c);fs.stat(f,(a,c)=>{if(!a){const a=c.isFile();a&&fs.readFile(f,(a,c)=>{a||b(d,c);});}});});});}
-readJsonFilesFromDir('languages/', (fileName, data) => {
-	i18n.dictionaries[fileName.substr(-5)] = data;
-});
+let i18n: {init: (language: string) => (key:string, vars?: string[]) => string, dictionaries: {[index: string]: object}} = {init:(a:string)=>(b:string,c:string[]=[]):string=>{let d=get(i18n, ['dictionaries', a, b]) || get(i18n, ['dictionaries', a, 'general error']) || 'Error: {1}';c.forEach((a,b)=>{d=d.replace(`{${b}}`,a);}); return d;},dictionaries:{}};
+// function readJsonFilesFromDir(a:string,b:(filename:string,data:object)=>void){fs.readdir(a,(c,d)=>{c||d.forEach(c=>{const d=path.parse(c).name,e=path.parse(c).ext;if('json'!==e)return;const f=path.resolve(a,c);fs.stat(f,(a,c)=>{if(!a){const a=c.isFile();a&&fs.readFile(f,(a,c)=>{a||b(d,c);});}});});});}
+// readJsonFilesFromDir(__dirname + '/languages/', (fileName, data) => {
+// 	i18n.dictionaries[fileName.substr(-5)] = data;
+// });
+
+const data = JSON.parse(String(fs.readFileSync(__dirname + '/languages/en-us.json')));
+i18n.dictionaries['en-us'] = data;
