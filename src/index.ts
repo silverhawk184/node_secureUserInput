@@ -376,5 +376,4 @@ let i18n: {init: (language: string) => (key:string, vars?: string[]) => string, 
 // 	i18n.dictionaries[fileName.substr(-5)] = data;
 // });
 
-const data = JSON.parse(String(fs.readFileSync(__dirname + '/languages/en-us.json')));
-i18n.dictionaries['en-us'] = data;
+i18n.dictionaries['en-us'] = JSON.parse(String(fs.readFileSync(__dirname + '/languages/en-us.json')));
