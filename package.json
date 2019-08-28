@@ -6,7 +6,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "check-types": "tsc",
+    "check-types": "tsc && cp -r src/languages lib/languages",
     "lint": "tslint -p tsconfig.json",
     "postversion": "git push && git push --tags",
     "prepare": "npm run build",
