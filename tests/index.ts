@@ -329,6 +329,7 @@ const arrayTests = {
 const arrayRules = {
 	'strings[]': stringRules.string,
 	'stringErrors[]': stringRules.stringDefaultValue,
+	'stringBlank[]': stringRules.string,
 };
 
 const arrayExpected = {
@@ -344,14 +345,33 @@ const arrayExpected = {
 		stringExpected.stringDefaultValue,
 		stringExpected.string,
 	],
+	stringBlank: []
 };
 
-assert.deepStrictEqual(secureUserInput(stringTests, stringRules).out, stringExpected);
-assert.deepStrictEqual(secureUserInput(numberTests, numberRules).out, numberExpected);
-assert.deepStrictEqual(secureUserInput(booleanTests, booleanRules).out, booleanExpected);
-assert.deepStrictEqual(secureUserInput(emailTests, emailRules).out, emailExpected);
-assert.deepStrictEqual(secureUserInput(dateTests, dateRules).out, dateExpected);
-assert.deepStrictEqual(secureUserInput(urlTests, urlRules).out, urlExpected);
-assert.deepStrictEqual(secureUserInput(rawTests, rawRules).out, rawExpected);
-assert.deepStrictEqual(secureUserInput(multipleTests, multipleRules).out, multipleExpected);
-assert.deepStrictEqual(secureUserInput(arrayTests, arrayRules).out, arrayExpected);
+const missingObjectTests = {};
+const missingObjectRules = {
+	level1: {
+		level2: {...baseRules.string, defaultValue: 'yes'},
+		level2Error: {...baseRules.string, required: true},
+	}
+};
+const missingObjectExpected = {
+	level1:{
+		level2: 'yes',
+		level2Error: undefined,
+	}
+};
+
+async function runTests() {
+	assert.deepStrictEqual((await secureUserInput(stringTests, stringRules)).out, stringExpected);
+	assert.deepStrictEqual((await secureUserInput(numberTests, numberRules)).out, numberExpected);
+	assert.deepStrictEqual((await secureUserInput(booleanTests, booleanRules)).out, booleanExpected);
+	assert.deepStrictEqual((await secureUserInput(emailTests, emailRules)).out, emailExpected);
+	assert.deepStrictEqual((await secureUserInput(dateTests, dateRules)).out, dateExpected);
+	assert.deepStrictEqual((await secureUserInput(urlTests, urlRules)).out, urlExpected);
+	assert.deepStrictEqual((await secureUserInput(rawTests, rawRules)).out, rawExpected);
+	assert.deepStrictEqual((await secureUserInput(multipleTests, multipleRules)).out, multipleExpected);
+	assert.deepStrictEqual((await secureUserInput(arrayTests, arrayRules)).out, arrayExpected);
+	assert.deepStrictEqual((await secureUserInput(missingObjectTests, missingObjectRules)).out, missingObjectExpected);
+}
+runTests();

@@ -143,4 +143,14 @@ Built in validation for: strings,numbers, booleans, phone numbers, email address
 - **required**?: boolean;
 - **defaultValue**?: any;
 
+### baseRule.file
+
+- **required**?: boolean;
+- **mimeTypes**: 'string[]'; (['image/gif','image/png','image/jpeg'])
+- **minSize**?: number; (bytes)
+- **maxSize**?: number; (bytes)
+- **virusCheck**?: boolean;
+
 ## Tests coming soon
+see tests/ folder for the full set of tests
+* file tests coming soon

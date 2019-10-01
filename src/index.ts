@@ -1,9 +1,11 @@
 import fs from 'fs';
 import { get, isArray } from 'lodash';
 import mysql from 'mysql';
-import path from 'path';
 
 const sugar = require('sugar-date');
+const clamd = require('clamdjs');
+const scanner = clamd.createScanner('127.0.0.1', 3310);
+const fileType = require('file-type');
 
 // cSpell:ignore PARSEINPUTRULE RULECONST
 
@@ -87,11 +89,21 @@ const ruleRaw: {
 	required?: boolean;
 	defaultValue?: any;
 } = { RULECONST, type: 'raw' };
+const ruleFile: {
+	RULECONST: string;
+	type: 'file';
+	required?: boolean;
+	mimeTypes?: string[];
+	minSize?: number;
+	maxSize?: number;
+	virusCheck?: boolean;
+} = { RULECONST, type: 'file'};
 
 export let baseRules = {
 	boolean: ruleBoolean,
 	date: ruleDate,
 	email: ruleEmail,
+	file: ruleFile,
 	number: ruleNumber,
 	phone: rulePhone,
 	raw: ruleRaw,
@@ -99,16 +111,16 @@ export let baseRules = {
 	url: ruleUrl
 };
 
-export const secureUserInput = (
+export const secureUserInput = async (
 	data: any,
 	dataRules: any,
 	fn?: any,
 	language: string = 'en-us'
-): { out: any; errors: string[] } => {
+): Promise<{ out: any; errors: string[] }> => {
 	const lang = i18n.init(language);
 	const errors: string[] = [];
 
-	function iterationCopy(src: any, curPath: string[] = []) {
+	async function iterationCopy(src: any, curPath: string[] = []) {
 		const target: any = {};
 		for (const prop of Object.keys(src)) {
 			const tempPath = [...curPath];
@@ -120,19 +132,19 @@ export const secureUserInput = (
 					typeof src[prop].RULECONST === 'string' &&
 					src[prop].RULECONST === RULECONST
 				)
-					target[cleanProp] = testAndBuild(src[prop], tempPath.join('.'));
+					target[cleanProp] = await testAndBuild(src[prop], tempPath.join('.'));
 				else if (prop.substr(-2) === '[]')
 					target[cleanProp] = get(data, tempPath.join('.'), []).map(
-						(item: any, index: number) =>
-							testAndBuild(src[prop], tempPath.join('.') + '[' + index + ']')
+						async (item: any, index: number) =>
+							await testAndBuild(src[prop], tempPath.join('.') + '[' + index + ']')
 					);
-				else target[cleanProp] = iterationCopy(src[prop], tempPath);
+				else target[cleanProp] = await iterationCopy(src[prop], tempPath);
 			}
 		}
 		return target;
 	}
 
-	function testAndBuild(curRules: any, curPath: string): any {
+	async function testAndBuild(curRules: any, curPath: string): Promise<any> {
 		const { required, defaultValue, type, multiple } = curRules;
 		const {
 			minLength,
@@ -148,6 +160,7 @@ export const secureUserInput = (
 		const { min, max, decimalPlaces, asString } = curRules;
 		const { to01, asString01 } = curRules;
 		const { includeTime, format } = curRules;
+		const { mimeTypes, minSize, maxSize, virusCheck } = curRules;
 		let safeTemp: string[];
 		let temp = get(data, curPath);
 		if (
@@ -159,24 +172,30 @@ export const secureUserInput = (
 				curPath,
 				get(data, curPath.substr(0, curPath.length - 2))
 			);
-			if (!isArray(temp)) {
+			if (typeof temp === 'undefined') {
+				return [];
+			}
+			else if (!isArray(temp)) {
 				errors.push(lang('invalid data', [curPath]));
 				return undefined;
-			} else if (required && temp.length === 0) {
+			}
+			else if (required && temp.length === 0) {
 				errors.push(lang('invalid data', [curPath]));
 				return undefined;
-			} else {
+			}
+			else {
 				curRules.multiple = false;
-				return temp.map((item, index) =>
+				return await Promise.all(temp.map((item, index) =>
 					testAndBuild(curRules, `${curPath}[${index}]`)
-				);
+				));
 			}
 		}
 		if (typeof temp === 'undefined') {
 			if (required) {
 				errors.push(lang('missing data', [curPath]));
 				return undefined;
-			} else if (typeof defaultValue !== 'undefined')
+			}
+			else if (typeof defaultValue !== 'undefined')
 				return curRules.defaultValue;
 			else return undefined;
 		}
@@ -356,14 +375,43 @@ export const secureUserInput = (
 				temp = mysql.escape(temp);
 			}
 			return temp;
-		} else if (type === 'raw') return temp;
+		}
+		else if (type === 'raw') return temp;
+		else if (type === 'file'){
+			if (!Buffer.isBuffer(temp)){
+				errors.push(lang('invalid buffer data', [curPath]));
+				return undefined;
+			}
+			if (mimeTypes && mimeTypes === 'object'){
+				const {mime} = fileType(temp);
+				if (mimeTypes.indexOf(mime) < 0){
+					errors.push(lang('invalid filetype', [curPath]));
+					return undefined;
+				}
+			}
+			if (typeof minSize === 'number' && temp.byteLength < minSize ) {
+				errors.push(lang('file is too small', [curPath]));
+				return undefined;
+			}
+			if (typeof maxSize === 'number' && temp.byteLength > maxSize ) {
+				errors.push(lang('file is too small', [curPath]));
+				return undefined;
+			}
+			if (typeof virusCheck === 'boolean' && virusCheck) {
+				const reply = await scanner.scanBuffer(temp, 3000, 1024 * 1024);
+				if (!clamd.isCleanReply(reply)) {
+					errors.push(lang('file is infected with virus', [curPath]));
+					return undefined;
+				}
+			}
+		}
 		else {
 			errors.push(lang('invalid data', [curPath]));
 			return undefined;
 		}
 	}
 
-	const out = iterationCopy(dataRules);
+	const out = await iterationCopy(dataRules);
 	if (errors.length > 0) errors.unshift(lang('header'));
 	return { out, errors };
 };
