@@ -23,7 +23,7 @@
   "license": "ISC",
   "dependencies": {
     "clamdjs": "^1.0.2",
-    "file-type": "^12.3.0",
+    "file-type": "^13.0.3",
     "lodash": "^4.17.15",
     "mysql": "^2.17.1",
     "sugar-date": "^2.0.6"
